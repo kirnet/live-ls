@@ -14,8 +14,10 @@ var app = express();
 var WebSocket = require('ws');
 var wss = new WebSocket.Server({port: 3001});
 var EventEmitter = new (require('events'));
+var mysql = require('mysql');
+var connection = require('express-myconnection');
+//var moment = require('moment');
 var clients = {};
-//EventEmitter = new EventEmitter();
 
 wss.on('connection', function connection(ws) {
   var id = Math.random();
@@ -73,11 +75,16 @@ console.log(data);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(
+  connection(mysql, require('./config/mysql.js'),'request')
+);
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+//app.use(moment);
 
 app.use('/', index);
 app.use('/users', users);
