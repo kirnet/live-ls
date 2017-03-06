@@ -38,12 +38,9 @@ router.put('/add_token', function(req, res, next) {
 
 router.post('/save_token', function(req, res, next) {
   if (req.body.id) {
-    var moment = require('moment'),
-        expire =
-
-        moment.locale('ru');
-
-    req.body.expire = moment(req.body.expire, "D/M/YYYY H:mm").unix();
+    var moment = require('moment');
+    moment.locale('ru');
+    req.body.expire = moment(req.body.expire, 'DD.MM.YYYY').unix();
     req.getConnection(function(err, connection) {
       connection.query('UPDATE tokens set ? WHERE id =' + req.body.id, req.body, function(err, rows) {
         if(err) console.log("Error Selecting : %s ", err);

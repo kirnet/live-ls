@@ -43,12 +43,13 @@ $(function() {
   });
 
   $(document).on('click', '.save_token', function() {
-    var row = $(this).parents(':eq(1)');
-    var data = {
-      id: row.find('[data-id]').data('id'),
-      token: row.find('input.token').val(),
-      expire: row.find('input.expire').val(),
-    };
+    var row = $(this).parents(':eq(1)'),
+        button = $(this),
+        data = {
+          id: row.find('[data-id]').data('id'),
+          token: row.find('input.token').val(),
+          expire: row.find('input.expire').val(),
+        };
 
     $.ajax({
       url: '/livestreet/save_token',
@@ -56,7 +57,9 @@ $(function() {
       dataType: 'json',
       data: data,
       success: function(data) {
-        console.log(data);
+        if (data.result) {
+          button.addClass('hidden');
+        }
       }
     });
 
