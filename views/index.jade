@@ -12,6 +12,7 @@ block content
       th id
       th Токен
       th Истекает
+      th Правила
       th Действия
     for token, i in tokens
       tr
@@ -20,6 +21,8 @@ block content
           input.form-control.token.show_save(type='text', value="#{token.token}")
         td
           input.form-control.show_save.expire(type='text', value="#{ moment(1000 * token.expire).format('DD.MM.YYYY') }")
+        td
+          input.form-control.show_save.rules(type='text', value="#{token.rules}")
         td.action_column
           button.save_token.btn.btn-primary.hidden(type='button') Сохранить
           span &nbsp;

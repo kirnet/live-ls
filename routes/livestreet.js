@@ -51,6 +51,7 @@ router.post('/save_token', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
+  console.log(req.body);
   res.send('livestreet post');
   router.params = req.body;
   app.EventEmitter.emit('sendAll');

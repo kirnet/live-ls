@@ -35,7 +35,6 @@ $(function() {
       lls.deleteToken(tokenId);
       modalDialog.modal('hide');
     });
-
   });
 
   $(document).on('keyup', '.show_save', function() {
@@ -44,18 +43,18 @@ $(function() {
 
   $(document).on('click', '.save_token', function() {
     var row = $(this).parents(':eq(1)'),
-        button = $(this),
-        data = {
-          id: row.find('[data-id]').data('id'),
-          token: row.find('input.token').val(),
-          expire: row.find('input.expire').val(),
-        };
+        button = $(this);
 
     $.ajax({
       url: '/livestreet/save_token',
       type: 'post',
       dataType: 'json',
-      data: data,
+      data: {
+        id: row.find('[data-id]').data('id'),
+        token: row.find('input.token').val(),
+        expire: row.find('input.expire').val(),
+        rules: row.find('input.rules').val()
+      },
       success: function(data) {
         if (data.result) {
           button.addClass('hidden');
