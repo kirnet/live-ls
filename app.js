@@ -78,6 +78,7 @@ wss.broadcast = function broadcast(data) {
   for (var id in clients) {
     console.log('clientInfo: ', clients[id].clientInfo);
     if (dataObj.update) {
+      sendUrls = [];
       for (var indx in dataObj.update) {
         if (parseInt(indx) > -1) {
           sendUrls.push('/');
@@ -89,6 +90,7 @@ wss.broadcast = function broadcast(data) {
 
       if (!clients[id].clientInfo.isExpired) {
         if (sendUrls.indexOf(clients[id].clientInfo.path) > -1) {
+          console.log('send client');
           clients[id].send(data);
           numClients++;
         }
@@ -99,6 +101,7 @@ wss.broadcast = function broadcast(data) {
             console.log('regexp: ', regexp);
             if (regexp.test(clients[id].clientInfo.path)) {
               console.log('regexp parsed');
+              console.log('send client');
               clients[id].send(data);
               numClients++;
             }
