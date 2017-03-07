@@ -76,9 +76,12 @@ wss.broadcast = function broadcast(data) {
   }
 
   for (var id in clients) {
-    console.log('clientInfo: ', clients[id].clientInfo);
-    if (dataObj.update) {
+    if (dataObj.content_type.length) {
       sendUrls = [];
+      if (clients[id].clientInfo.rules && clients[id].clientInfo.rules[dataObj.content_type[0]]) {
+        dataObj.update = clients[id].clientInfo.rules[dataObj.content_type[0]];
+      }
+
       for (var indx in dataObj.update) {
         if (parseInt(indx) > -1) {
           sendUrls.push('/');
@@ -108,17 +111,6 @@ wss.broadcast = function broadcast(data) {
           }
         }
       }
-      // switch(data.update) {
-      //   case 'comment':
-      //     if (data.topic_url.indexOf(clients[id].clientInfo.path) > -1) {
-      //       clients[id].send(JSON.stringify(data));
-      //       console.log('send to comment');
-      //     }
-      //     break;
-      //   case 'stream_blog':
-      //
-      //     break;
-      // }
     }
   }
   console.log('broadcast sended', numClients);
