@@ -10,7 +10,6 @@ router.get('/', function(req, res, next) {
 });
 
 router.delete('/delete_token', function(req, res, next) {
-  console.log(req.body);
   if (req.body.id && req.body.id > 0) {
     req.getConnection(function(err,connection) {
       connection.query('DELETE FROM tokens WHERE id=?', req.body.id, function(err, rows) {
@@ -39,19 +38,27 @@ router.put('/add_token', function(req, res, next) {
 router.post('/save_token', function(req, res, next) {
   if (req.body.id) {
     var moment = require('moment');
+    var isJSON = require('is-json');
     moment.locale('ru');
     req.body.expire = moment(req.body.expire, 'DD.MM.YYYY').unix();
-    req.getConnection(function(err, connection) {
-      connection.query('UPDATE tokens set ? WHERE id =' + req.body.id, req.body, function(err, rows) {
-        if(err) console.log("Error Selecting : %s ", err);
-        res.send(JSON.stringify({result: rows.affectedRows}));
+    if (!isJSON(req.body.rules)) {
+      res.send(JSON.stringify({
+        result: false,
+        message: 'Not valid JSON'
+      }));
+    }
+    else {
+      req.getConnection(function(err, connection) {
+        connection.query('UPDATE tokens set ? WHERE id =' + req.body.id, req.body, function(err, rows) {
+          if(err) console.log("Error Selecting : %s ", err);
+          res.send(JSON.stringify({result: rows.affectedRows}));
+        });
       });
-    });
+    }
   }
 });
 
 router.post('/', function(req, res, next) {
-  console.log(req.body);
   res.send('livestreet post');
   router.params = req.body;
   app.EventEmitter.emit('sendAll');

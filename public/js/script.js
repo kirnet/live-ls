@@ -59,6 +59,15 @@ $(function() {
         if (data.result) {
           button.addClass('hidden');
         }
+        else {
+          $.toast({
+            heading: 'Error',
+            text: data.message,
+            showHideTransition: 'fade',
+            icon: 'error',
+            position : 'top-right'
+          })
+        }
       }
     });
 

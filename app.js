@@ -34,15 +34,21 @@ wss.on('connection', function (ws) {
   });
 
   ws.on('message', function incoming(message) {
-    if (message.indexOf('path') > -1) {
+    if (message.indexOf('path') > -1 && message.indexOf('token')) {
       clients[id].clientInfo = JSON.parse(message);
       var now = new Date(),
           nowTimestamp = Math.round(now.getTime() / 1000);
 
       mySqlPool.query('SELECT * FROM tokens WHERE token=?', clients[id].clientInfo.token, function(err, rows) {
-        if (rows.length && rows[0].expire < nowTimestamp) {
+        if (rows && rows[0].expire < nowTimestamp) {
           clients[id].clientInfo.isExpired = true;
           console.log(rows[0].token, ' expired');
+        }
+        else {
+          if (rows[0].rules) {
+            clients[id].clientInfo.rules = JSON.parse(rows[0].rules);
+            console.info('add token rules');
+          }
         }
       });
 
@@ -50,9 +56,7 @@ wss.on('connection', function (ws) {
     console.log('websocket receive', message);
   });
   console.log("новое соединение " + id);
-
   countClients();
-
 });
 
 EventEmitter.on('sendAll', function() {
@@ -68,23 +72,37 @@ wss.broadcast = function broadcast(data) {
       sendUrls = [];
 
   if (isJSON(data)) {
-    data = JSON.parse(data);
+    var dataObj = JSON.parse(data);
   }
 
   for (var id in clients) {
-    if (data.update) {
-      for (var indx in data.update) {
-        if (parseInt(indx) !== NaN) {
+    console.log('clientInfo: ', clients[id].clientInfo);
+    if (dataObj.update) {
+      for (var indx in dataObj.update) {
+        if (parseInt(indx) > -1) {
           sendUrls.push('/');
         }
-        if (indx == 'topics') {
-
+        else {
+          sendUrls.push(dataObj.update[indx]);
         }
       }
 
       if (!clients[id].clientInfo.isExpired) {
         if (sendUrls.indexOf(clients[id].clientInfo.path) > -1) {
-          clients[id].send(JSON.stringify(data));
+          clients[id].send(data);
+          numClients++;
+        }
+        else {
+          for (var indx in sendUrls) {
+            if (indx == '0') continue;
+            var regexp = new RegExp(sendUrls[indx]);
+            console.log('regexp: ', regexp);
+            if (regexp.test(clients[id].clientInfo.path)) {
+              console.log('regexp parsed');
+              clients[id].send(data);
+              numClients++;
+            }
+          }
         }
       }
       // switch(data.update) {
@@ -99,9 +117,8 @@ wss.broadcast = function broadcast(data) {
       //     break;
       // }
     }
-    numClients++;
   }
-  console.log('broadcast clients', numClients);
+  console.log('broadcast sended', numClients);
 };
 
 // view engine setup
@@ -114,7 +131,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+//app.use(isJSON);
 // app.use(express.cookieDecoder());
 // app.use(express.session());
 
@@ -151,13 +168,4 @@ function countClients() {
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
-module.exports.findAll = function (req, res, next) {
-  req.getConnection(function (err, connection) {
-    connection.query('SELECT * FROM users', function (err, rows) {
-      if(err) console.log("Error Selecting : %s ", err);
-      console.log(rows);
-    });
-  });
-
-};
 
