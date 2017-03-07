@@ -45,7 +45,7 @@ wss.on('connection', function (ws) {
           console.log(rows[0].token, ' expired');
         }
         else {
-          if (rows[0].rules) {
+          if (rows && rows[0].rules) {
             clients[id].clientInfo.rules = JSON.parse(rows[0].rules);
             console.info('add token rules');
           }
