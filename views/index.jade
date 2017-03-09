@@ -2,6 +2,8 @@ extends layout
 
 block content
   script(src="/js/script.js")
+  a(href='/logout')
+    button.exit.btn.btn-default(type='button') Выход
   h1= 'Токены'
 
   button.btn.btn-primary(type='button', data-toggle="modal", data-target="#add_token") Добавить

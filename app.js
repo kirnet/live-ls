@@ -4,7 +4,7 @@ var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
-// var cookieParser = require('cookie-parser');
+var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var isJSON = require('is-json');
 var index = require('./routes/index');
@@ -16,12 +16,73 @@ var wss = new WebSocket.Server({port: 3001});
 var EventEmitter = new (require('events'));
 var mysql = require('mysql');
 var connection = require('express-myconnection');
-var mySqlPool = mysql.createConnection(
-  require('./config/mysql.js')
-);
-//var moment = require('moment');
+var mySqlPool = mysql.createConnection(require('./config/mysql.js'));
 var clients = {};
+var mongoose = require('mongoose');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var flash = require('connect-flash');
 
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(connection(mysql, require('./config/mysql.js'),'request'));
+
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(require('express-session')({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(flash());
+app.use(passport.session());
+
+
+var Account = require('./models/account.js');
+passport.use(new LocalStrategy(Account.authenticate()));
+passport.serializeUser(Account.serializeUser());
+passport.deserializeUser(Account.deserializeUser());
+
+// mongoose
+mongoose.connect('mongodb://localhost/live_ls');
+
+
+app.use('/', index);
+app.use('/users', users);
+app.use('/livestreet', livestreet);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+
+function countClients() {
+  var numClients = 0;
+  for (var id in clients) {
+    numClients++;
+  }
+  console.log('activeClients: ', numClients);
+}
 
 wss.on('connection', function (ws) {
   var id = Math.random();
@@ -37,7 +98,7 @@ wss.on('connection', function (ws) {
     if (message.indexOf('path') > -1 && message.indexOf('token')) {
       clients[id].clientInfo = JSON.parse(message);
       var now = new Date(),
-          nowTimestamp = Math.round(now.getTime() / 1000);
+        nowTimestamp = Math.round(now.getTime() / 1000);
 
       mySqlPool.query('SELECT * FROM tokens WHERE token=?', clients[id].clientInfo.token, function(err, rows) {
         if (rows && rows[0].expire < nowTimestamp) {
@@ -51,7 +112,6 @@ wss.on('connection', function (ws) {
           }
         }
       });
-
     }
     console.log('websocket receive', message);
   });
@@ -69,7 +129,7 @@ EventEmitter.on('sendAll', function() {
  */
 wss.broadcast = function broadcast(data) {
   var numClients = 0,
-      sendUrls = [];
+    sendUrls = [];
 
   if (isJSON(data)) {
     var dataObj = JSON.parse(data);
@@ -115,51 +175,6 @@ wss.broadcast = function broadcast(data) {
   }
   console.log('broadcast sended', numClients);
 };
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(connection(mysql, require('./config/mysql.js'),'request'));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-//app.use(isJSON);
-// app.use(express.cookieDecoder());
-// app.use(express.session());
-
-app.use('/', index);
-app.use('/users', users);
-app.use('/livestreet', livestreet);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-
-function countClients() {
-  var numClients = 0;
-  for (var id in clients) {
-    numClients++;
-  }
-  console.log('activeClients: ', numClients);
-}
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;

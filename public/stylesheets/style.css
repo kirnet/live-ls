@@ -1,5 +1,5 @@
 body {
-  padding: 50px;
+  padding: 20px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -13,4 +13,8 @@ input.token {
 
 .action_column {
   width: 200px;
+}
+
+button.exit {
+  float: right;
 }
