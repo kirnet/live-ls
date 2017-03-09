@@ -32,7 +32,7 @@ app.use(connection(mysql, require('./config/mysql.js'),'request'));
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(require('express-session')({
   secret: 'keyboard cat',
