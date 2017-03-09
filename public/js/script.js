@@ -20,6 +20,13 @@ lls.deleteToken = function(tokenId) {
   });
 };
 
+lls.prettyJson = function(json, pretty) {
+  if (pretty) {
+    return JSON.stringify(JSON.parse(json), null, 4);
+  }
+  return JSON.stringify(JSON.parse(json));
+}
+
 $(function() {
   $(document).on('click', '.send_token', function() {
     //var form = $('.new_token').serialize();
@@ -41,6 +48,24 @@ $(function() {
     $(this).parents(':eq(1)').find('button.hidden').removeClass('hidden');
   });
 
+  $(document).on('focus', '.rules', function() {
+    var tokenId = $(this).parents(':eq(1)').find('.id').data('id'),
+        editJson = $('#edit_json');
+    editJson.modal('show');
+    editJson.find('#token_id').val(tokenId);
+    $('.edit_json').val(lls.prettyJson($(this).val(), true));
+  });
+
+  $(document).on('click', '.save_json', function() {
+    var editJson = $('#edit_json'),
+        tokenId = editJson.find('#token_id').val(),
+        tr = $('table.tokens').find('.id[data-id='+ tokenId +']').parent();
+
+    tr.find('.rules').val(lls.prettyJson($('.edit_json').val()));
+    tr.find('.save_token').click();
+    editJson.modal('toggle');
+  });
+
   $(document).on('click', '.save_token', function() {
     var row = $(this).parents(':eq(1)'),
         button = $(this);
@@ -58,6 +83,12 @@ $(function() {
       success: function(data) {
         if (data.result) {
           button.addClass('hidden');
+          $.toast({
+            text: 'Успешно сохранено',
+            showHideTransition: 'fade',
+            position : 'top-right',
+            icon: 'info'
+          });
         }
         else {
           $.toast({
@@ -66,7 +97,7 @@ $(function() {
             showHideTransition: 'fade',
             icon: 'error',
             position : 'top-right'
-          })
+          });
         }
       }
     });

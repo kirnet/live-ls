@@ -30,6 +30,21 @@ block content
           span &nbsp;
           button.btn.btn-danger.delete_token(type='button', data-token_id='#{token.id}') Удалить
 
+  div.modal.fade(tabindex="-1", role="dialog")#edit_json
+    div.modal-dialog(role="document")
+      div.modal-content
+        div.modal-header
+          button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title JSON
+        div.modal-body
+          input(type='hidden')#token_id
+          textarea.edit_json
+        div.modal-footer
+          button(type="button" class="btn btn-primary save_json") Сохранить
+          button(type="button" class="btn btn-default" data-dismiss="modal") Отмена
+
+  // Add new token modal
   div.modal.fade(tabindex="-1", role="dialog")#add_token
     div.modal-dialog(role="document")
       div.modal-content

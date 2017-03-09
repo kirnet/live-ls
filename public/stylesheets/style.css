@@ -18,3 +18,8 @@ input.token {
 button.exit {
   float: right;
 }
+
+textarea.edit_json {
+  width: 100%;
+  height: 400px;
+}
