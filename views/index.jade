@@ -4,31 +4,29 @@ block content
   script(src="/js/script.js")
   a(href='/logout')
     button.exit.btn.btn-default(type='button') Выход
-  h1= 'Токены'
+  h1 Домены
 
   button.btn.btn-primary(type='button', data-toggle="modal", data-target="#add_token") Добавить
   br
   br
-  table.table.tokens
+  table.table.domains
     tr
-      th id
-      th Токен
+      th Домен
       th Истекает
       th Правила
       th Действия
-    for token, i in tokens
+    for domain, i in domains
       tr
-        td.id(data-id='#{token.id}') #{token.id}
         td
-          input.form-control.token.show_save(type='text', value="#{token.token}")
+          input.form-control.domain.show_save(type='text', value="#{domain.domain}", disabled)
         td
-          input.form-control.show_save.expire(type='text', value="#{ moment(1000 * token.expire).format('DD.MM.YYYY') }")
+          input.form-control.show_save.expire(type='text', value="#{ moment(1000 * domain.expire).format('DD.MM.YYYY') }")
         td
-          input.form-control.show_save.rules(type='text', value="#{token.rules}")
+          input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
         td.action_column
-          button.save_token.btn.btn-primary.hidden(type='button') Сохранить
+          button.save_domain.btn.btn-primary.hidden(type='button') Сохранить
           span &nbsp;
-          button.btn.btn-danger.delete_token(type='button', data-token_id='#{token.id}') Удалить
+          button.btn.btn-danger.delete_domain(type='button', data-domain='#{domain.domain}') Удалить
 
   div.modal.fade(tabindex="-1", role="dialog")#edit_json
     div.modal-dialog(role="document")
@@ -38,7 +36,7 @@ block content
             span(aria-hidden="true") &times;
           h4.modal-title JSON
         div.modal-body
-          input(type='hidden')#token_id
+          input(type='hidden')#domain
           textarea.edit_json
         div.modal-footer
           button(type="button" class="btn btn-primary save_json") Сохранить
@@ -51,21 +49,21 @@ block content
         div.modal-header
           button(type="button", class="close", data-dismiss="modal", aria-label="Close")
             span(aria-hidden="true") &times;
-          h4.modal-title Добавление токена
+          h4.modal-title Добавление домена
         div.modal-body
-          form.new_token(action='/livestreet/add_token', method='put')
+          form.new_domain(action='/livestreet/add_domain', method='post')
             table.table
               tr
-                th Токен
+                th Домен
                 th Истекает
               tr
                 td
-                  input.form-control.token(type='text', name='token')
+                  input.form-control.domain(type='text', name='domain')
                 td
                   input.form-control.expire(type='text', name='expire')
         div.modal-footer
           //button(type="button" class="btn btn-default" data-dismiss="modal") Close
-          button(type="button" class="btn btn-primary send_token") Сохранить
+          button(type="button" class="btn btn-primary send_domain") Сохранить
 
   div.modal.fade(tabindex="-1", role="dialog")#confirm_dialog
     div.modal-dialog(role="document")
@@ -75,7 +73,7 @@ block content
             span(aria-hidden="true") &times;
           h4.modal-title Внимание
         div.modal-body
-          span#confirm_data Вы действительно хотите удалить токен?
+          span#confirm_data Вы действительно хотите удалить домен?
 
         div.modal-footer
           button(type="button" class="btn btn-default" data-dismiss="modal") Нет

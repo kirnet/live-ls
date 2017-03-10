@@ -14,9 +14,9 @@ var app = express();
 var WebSocket = require('ws');
 var wss = new WebSocket.Server({port: 3001});
 var EventEmitter = new (require('events'));
-var mysql = require('mysql');
-var connection = require('express-myconnection');
-var mySqlPool = mysql.createConnection(require('./config/mysql.js'));
+// var mysql = require('mysql');
+// var connection = require('express-myconnection');
+// var mySqlPool = mysql.createConnection(require('./config/mysql.js'));
 var clients = {};
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -28,7 +28,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(connection(mysql, require('./config/mysql.js'),'request'));
+// app.use(connection(mysql, require('./config/mysql.js'),'request'));
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -49,7 +49,8 @@ passport.use(new LocalStrategy(Account.authenticate()));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
-// mongoose
+var Domains = require('./models/domains.js');
+
 mongoose.connect('mongodb://localhost/live_ls');
 
 
@@ -98,19 +99,22 @@ wss.on('connection', function (ws) {
     if (message.indexOf('path') > -1 && message.indexOf('token')) {
       clients[id].clientInfo = JSON.parse(message);
       var now = new Date(),
-        nowTimestamp = Math.round(now.getTime() / 1000);
+        nowTimestamp = Math.round(now.getTime() / 1000),
+        clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
 
-      mySqlPool.query('SELECT * FROM tokens WHERE token=?', clients[id].clientInfo.token, function(err, rows) {
-        if (rows && rows[0].expire < nowTimestamp) {
-          clients[id].clientInfo.isExpired = true;
-          console.log(rows[0].token, ' expired');
+      Domains.find({"domain": clientOrigin}, function(err, domain) {
+        if (!domain.length) {
+          clients[id].clientInfo.isBlock = true
+        }
+        else if(domain[0].expire < nowTimestamp) {
+          clients[id].clientInfo.isBlock = true
         }
         else {
-          if (rows && rows[0].rules) {
-            clients[id].clientInfo.rules = JSON.parse(rows[0].rules);
-            console.info('add token rules');
+          if (domain[0].rules) {
+            clients[id].clientInfo.rules = JSON.parse(domain[0].rules);
           }
         }
+
       });
     }
     console.log('websocket receive', message);
@@ -151,7 +155,7 @@ wss.broadcast = function broadcast(data) {
         }
       }
 
-      if (!clients[id].clientInfo.isExpired) {
+      if (!clients[id].clientInfo.isBlock) {
         if (sendUrls.indexOf(clients[id].clientInfo.path) > -1) {
           console.log('send client');
           clients[id].send(data);

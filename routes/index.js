@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
-//const Account = require('../models/account');
+const Account = require('../models/account');
+const Domains = require('../models/domains.js');
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
@@ -8,16 +9,15 @@ router.get('/', function(req, res, next) {
     res.redirect('/login');
     return false;
   }
-  req.getConnection(function(err,connection){
-    connection.query('SELECT * FROM tokens',function(err,rows) {
-      if(err) console.log("Error Selecting : %s ", err);
-      res.render('index', {
-        title:"Tokens list",
-        tokens: rows,
-        moment: require('moment')
-      });
-    });
 
+  Domains.find({}, function(err, domains) {
+    if (err) throw err;
+
+    res.render('index', {
+      title: "Домены",
+      domains: domains,
+      moment: require('moment')
+    });
   });
 });
 

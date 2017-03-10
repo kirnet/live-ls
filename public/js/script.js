@@ -2,14 +2,14 @@
 
 var lls = {};
 
-lls.deleteToken = function(tokenId) {
-  var row = $('table.tokens').find('.id[data-id=' +tokenId +']').parent();
+lls.deletedomain = function(domain) {
+  var row = $('table.domains').find('.domain[value=' + domain +']').parents(':eq(1)');
   $.ajax({
-    url: '/livestreet/delete_token',
+    url: '/livestreet/delete_domain',
     type: 'delete',
     dataType: 'json',
     data: {
-      id: tokenId
+      domain: domain
     },
     success: function(data) {
       if (data.result) {
@@ -21,6 +21,7 @@ lls.deleteToken = function(tokenId) {
 };
 
 lls.prettyJson = function(json, pretty) {
+  if (!json) return '';
   if (pretty) {
     return JSON.stringify(JSON.parse(json), null, 4);
   }
@@ -28,18 +29,18 @@ lls.prettyJson = function(json, pretty) {
 }
 
 $(function() {
-  $(document).on('click', '.send_token', function() {
-    //var form = $('.new_token').serialize();
-    $('.new_token').submit();
+  $(document).on('click', '.send_domain', function() {
+    //var form = $('.new_domain').serialize();
+    $('.new_domain').submit();
   });
 
-  $(document).on('click', '.delete_token', function() {
-    var tokenId = $(this).data('token_id'),
+  $(document).on('click', '.delete_domain', function() {
+    var domain = $(this).data('domain'),
         modalDialog = $('#confirm_dialog');
 
-    modalDialog.modal('show').find('#confirm_data').data('token_id', tokenId);
+    modalDialog.modal('show').find('#confirm_data').data('domain', domain);
     $('.confirm_yes').off().on('click', function() {
-      lls.deleteToken(tokenId);
+      lls.deletedomain(domain);
       modalDialog.modal('hide');
     });
   });
@@ -49,34 +50,34 @@ $(function() {
   });
 
   $(document).on('focus', '.rules', function() {
-    var tokenId = $(this).parents(':eq(1)').find('.id').data('id'),
+    var domain = $(this).parents(':eq(1)').find('.domain').val(),
         editJson = $('#edit_json');
     editJson.modal('show');
-    editJson.find('#token_id').val(tokenId);
+    editJson.find('#domain').val(domain);
     $('.edit_json').val(lls.prettyJson($(this).val(), true));
   });
 
   $(document).on('click', '.save_json', function() {
     var editJson = $('#edit_json'),
-        tokenId = editJson.find('#token_id').val(),
-        tr = $('table.tokens').find('.id[data-id='+ tokenId +']').parent();
+        domain = editJson.find('#domain').val(),
+        tr = $('table.domains').find('.domain[value="'+ domain +'"]').parents(':eq(1)');
 
     tr.find('.rules').val(lls.prettyJson($('.edit_json').val()));
-    tr.find('.save_token').click();
+    tr.find('.save_domain').click();
     editJson.modal('toggle');
   });
 
-  $(document).on('click', '.save_token', function() {
+  $(document).on('click', '.save_domain', function() {
     var row = $(this).parents(':eq(1)'),
         button = $(this);
 
     $.ajax({
-      url: '/livestreet/save_token',
+      url: '/livestreet/save_domain',
       type: 'post',
       dataType: 'json',
       data: {
         id: row.find('[data-id]').data('id'),
-        token: row.find('input.token').val(),
+        domain: row.find('input.domain').val(),
         expire: row.find('input.expire').val(),
         rules: row.find('input.rules').val()
       },

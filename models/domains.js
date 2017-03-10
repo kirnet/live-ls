@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Domains = new Schema({
-  domain  : String,
-  expire  : Number,
+  domain  : { type: String, required: true, unique: true },
+  expire  : { type: Number, required: true },
   rules   : Object
 });
 
