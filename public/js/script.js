@@ -3,7 +3,7 @@
 var lls = {};
 
 lls.deletedomain = function(domain) {
-  var row = $('table.domains').find('.domain[value=' + domain +']').parents(':eq(1)');
+  var row = $('table.domains').find('.domain[value="' + domain +'"]').parents(':eq(1)');
   $.ajax({
     url: '/livestreet/delete_domain',
     type: 'delete',
