@@ -4,6 +4,26 @@ block content
   script(src="/js/script.js")
   a(href='/logout')
     button.exit.btn.btn-default(type='button') Выход
+
+  div
+    //Навигация
+    ul.nav.nav-tabs(role="tablist")
+      li.active
+        a(href="#home" aria-controls="home" role="tab" data-toggle="tab") домены
+      li
+        a(href="#profile" aria-controls="profile" role="tab" data-toggle="tab") Профиль
+      li
+        a(href="#messages" aria-controls="messages" role="tab" data-toggle="tab") Сообщения
+      li
+        a(href="#settings" aria-controls="settings" role="tab" data-toggle="tab") Настройки
+
+    //Содержимое вкладок
+    div.tab-content
+      div(role="tabpanel" class="tab-pane active" id="home") asdf
+      div(role="tabpanel" class="tab-pane" id="profile") asdf
+      div(role="tabpanel" class="tab-pane" id="messages") sdf
+      div( role="tabpanel" class="tab-pane" id="settings") asdf
+
   h1 Домены
 
   button.btn.btn-primary(type='button', data-toggle="modal", data-target="#add_token") Добавить
