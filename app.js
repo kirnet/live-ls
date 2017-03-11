@@ -7,9 +7,12 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var isJSON = require('is-json');
+
 var index = require('./routes/index');
 var users = require('./routes/users');
 var livestreet = require('./routes/livestreet');
+var clientsPage = require('./routes/clients');
+
 var app = express();
 var WebSocket = require('ws');
 var wss = new WebSocket.Server({port: 3001});
@@ -54,6 +57,7 @@ mongoose.connect('mongodb://localhost/live_ls');
 app.use('/', index);
 app.use('/users', users);
 app.use('/livestreet', livestreet);
+app.use('/clients', clientsPage);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

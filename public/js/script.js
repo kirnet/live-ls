@@ -1,6 +1,6 @@
 'use strict';
 
-var lls = {};
+var lls = lls || {};
 
 lls.deletedomain = function(domain) {
   var row = $('table.domains').find('.domain[value="' + domain +'"]').parents(':eq(1)');

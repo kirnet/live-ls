@@ -2,51 +2,37 @@ extends layout
 
 block content
   script(src="/js/script.js")
-  a(href='/logout')
-    button.exit.btn.btn-default(type='button') Выход
-
+  include partials/exit
   div
-    //Навигация
-    ul.nav.nav-tabs(role="tablist")
-      li.active
-        a(href="#home" aria-controls="home" role="tab" data-toggle="tab") домены
-      li
-        a(href="#profile" aria-controls="profile" role="tab" data-toggle="tab") Профиль
-      li
-        a(href="#messages" aria-controls="messages" role="tab" data-toggle="tab") Сообщения
-      li
-        a(href="#settings" aria-controls="settings" role="tab" data-toggle="tab") Настройки
-
+    include ./partials/tabs.jade
     //Содержимое вкладок
     div.tab-content
-      div(role="tabpanel" class="tab-pane active" id="home") asdf
-      div(role="tabpanel" class="tab-pane" id="profile") asdf
-      div(role="tabpanel" class="tab-pane" id="messages") sdf
-      div( role="tabpanel" class="tab-pane" id="settings") asdf
-
-  h1 Домены
-
-  button.btn.btn-primary(type='button', data-toggle="modal", data-target="#add_token") Добавить
-  br
-  br
-  table.table.domains
-    tr
-      th Домен
-      th Истекает
-      th Правила
-      th Действия
-    for domain, i in domains
-      tr
-        td
-          input.form-control.domain.show_save(type='text', value="#{domain.domain}", disabled)
-        td
-          input.form-control.show_save.expire(type='text', value="#{ moment(1000 * domain.expire).format('DD.MM.YYYY') }")
-        td
-          input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
-        td.action_column
-          button.save_domain.btn.btn-primary.hidden(type='button') Сохранить
-          span &nbsp;
-          button.btn.btn-danger.delete_domain(type='button', data-domain='#{domain.domain}') Удалить
+      div(role="tabpanel" class="tab-pane active" id="home")
+        br
+        button.btn.btn-primary(type='button', data-toggle="modal", data-target="#add_token") Добавить
+        br
+        br
+        table.table.domains
+          tr
+            th Домен
+            th Истекает
+            th Правила
+            th Действия
+          for domain, i in domains
+            tr
+              td
+                input.form-control.domain.show_save(type='text', value="#{domain.domain}", disabled)
+              td
+                input.form-control.show_save.expire(type='text', value="#{ moment(1000 * domain.expire).format('DD.MM.YYYY') }")
+              td
+                input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
+              td.action_column
+                button.save_domain.btn.btn-primary.hidden(type='button') Сохранить
+                span &nbsp;
+                button.btn.btn-danger.delete_domain(type='button', data-domain='#{domain.domain}') Удалить
+      //div(role="tabpanel" class="tab-pane" id="clients") Клиенты
+      //div(role="tabpanel" class="tab-pane" id="messages") sdf
+      //div( role="tabpanel" class="tab-pane" id="settings") asdf
 
   div.modal.fade(tabindex="-1", role="dialog")#edit_json
     div.modal-dialog(role="document")
