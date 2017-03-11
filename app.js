@@ -14,9 +14,6 @@ var app = express();
 var WebSocket = require('ws');
 var wss = new WebSocket.Server({port: 3001});
 var EventEmitter = new (require('events'));
-// var mysql = require('mysql');
-// var connection = require('express-myconnection');
-// var mySqlPool = mysql.createConnection(require('./config/mysql.js'));
 var clients = {};
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -78,48 +75,59 @@ app.use(function(err, req, res, next) {
 
 
 function countClients() {
-  var numClients = 0;
-  for (var id in clients) {
-    numClients++;
+  var numClients = 0,
+      domains = '';
+  for (var domain in clients) {
+    domains += domain + ' ';
+    for (var id in clients[domain] ) {
+      numClients++;
+    }
   }
-  console.log('activeClients: ', numClients);
+  console.log('active clients: ', numClients, ' ' ,domains);
 }
 
 wss.on('connection', function (ws) {
-  var id = Math.random();
-  clients[id] = ws;
+  var id = Math.random(),
+      clientDomain = ws.upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
+
+  if (!clients[clientDomain]) {
+    clients[clientDomain] = {};
+  }
+  clients[clientDomain][id] = ws;
 
   ws.on('close', function() {
     console.log('соединение закрыто ' + id);
-    delete clients[id];
+    delete clients[clientDomain][id];
     countClients();
   });
 
   ws.on('message', function incoming(message) {
     if (message.indexOf('path') > -1 && message.indexOf('token')) {
-      clients[id].clientInfo = JSON.parse(message);
-      var now = new Date(),
-        nowTimestamp = Math.round(now.getTime() / 1000),
-        clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
+      clients[clientDomain][id].clientInfo = JSON.parse(message);
+      if (clients[clientDomain][id].clientInfo) {
 
-      Domains.find({"domain": clientOrigin}, function(err, domain) {
-        if (!domain.length) {
-          clients[id].clientInfo.isBlock = true
+      }
+      var now = new Date(),
+        nowTimestamp = Math.round(now.getTime() / 1000);
+        //clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
+
+      Domains.findOne({"domain": clientDomain}, function(err, domain) {
+        if (!domain) {
+          clients[clientDomain][id].clientInfo.isBlock = true
         }
-        else if(domain[0].expire < nowTimestamp) {
-          clients[id].clientInfo.isBlock = true
+        else if(domain.expire < nowTimestamp) {
+          clients[clientDomain][id].clientInfo.isBlock = true
         }
         else {
-          if (domain[0].rules) {
-            clients[id].clientInfo.rules = JSON.parse(domain[0].rules);
+          if (domain.rules) {
+            clients[clientDomain][id].clientInfo.rules = JSON.parse(domain.rules);
           }
         }
-
       });
     }
     console.log('websocket receive', message);
   });
-  console.log("новое соединение " + id);
+  console.log("новое соединение " + clientDomain);
   countClients();
 });
 
@@ -138,38 +146,39 @@ wss.broadcast = function broadcast(data) {
   if (isJSON(data)) {
     var dataObj = JSON.parse(data);
   }
-
-  for (var id in clients) {
+  if (!clients[dataObj.domain]) return false;
+  for (var id in clients[dataObj.domain]) {
     if (dataObj.content_type.length) {
       sendUrls = [];
-      if (clients[id].clientInfo.rules && clients[id].clientInfo.rules[dataObj.content_type[0]]) {
-        dataObj.update = clients[id].clientInfo.rules[dataObj.content_type[0]];
+      if (clients[dataObj.domain][id].clientInfo.rules && clients[dataObj.domain][id].clientInfo.rules[dataObj.content_type[0]]) {
+        dataObj.update = clients[dataObj.domain][id].clientInfo.rules[dataObj.content_type[0]];
       }
 
       for (var indx in dataObj.update) {
         if (parseInt(indx) > -1) {
-          sendUrls.push('/');
+          sendUrls = sendUrls.concat(['/', '/index']);
+
         }
         else {
           sendUrls.push(dataObj.update[indx]);
         }
       }
 
-      if (!clients[id].clientInfo.isBlock) {
-        if (sendUrls.indexOf(clients[id].clientInfo.path) > -1) {
+      if (!clients[dataObj.domain][id].clientInfo.isBlock) {
+        if (sendUrls.indexOf(clients[dataObj.domain][id].clientInfo.path) > -1) {
           console.log('send client');
-          clients[id].send(data);
+          clients[dataObj.domain][id].send(data);
           numClients++;
         }
         else {
           for (var indx in sendUrls) {
-            if (indx == '0') continue;
+            if (indx.length == 1) continue;
             var regexp = new RegExp(sendUrls[indx]);
             console.log('regexp: ', regexp);
-            if (regexp.test(clients[id].clientInfo.path)) {
+            if (regexp.test(clients[dataObj.domain][id].clientInfo.path)) {
               console.log('regexp parsed');
               console.log('send client');
-              clients[id].send(data);
+              clients[dataObj.domain][id].send(data);
               numClients++;
             }
           }

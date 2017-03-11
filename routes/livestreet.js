@@ -5,6 +5,8 @@ var router = express.Router();
 var app = require('../app');
 var Domains = require('../models/domains.js');
 var moment = require('moment');
+var crypto = require('crypto');
+
 
 moment.locale('ru');
 /* GET users listing. */
@@ -28,11 +30,15 @@ router.post('/add_domain', function(req, res, next) {
   if (req.body.domain) {
     var newDomain = new Domains({
       domain: req.body.domain,
-      expire: moment(req.body.expire, 'DD.MM.YYYY').unix()
+      expire: moment(req.body.expire, 'DD.MM.YYYY').unix(),
+      hash: crypto.createHash('sha1').update(req.body.domain).digest("hex")
     });
 
     newDomain.save(function(err) {
-      if (err) throw err;
+      if (err)  {
+        res.send(err);
+        return false;
+      };
       res.redirect('/');
     });
   }
@@ -67,7 +73,13 @@ router.post('/save_domain', function(req, res, next) {
 router.post('/', function(req, res, next) {
   res.send('livestreet post');
   router.params = req.body;
-  app.EventEmitter.emit('sendAll');
+  Domains.findOne({"hash": req.body.token}, function(err, domain) {
+    if (domain) {
+      router.params.domain = domain.domain;
+      app.EventEmitter.emit('sendAll');
+    }
+  });
+
 });
 
 module.exports = router;
