@@ -7,6 +7,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var isJSON = require('is-json');
+var onlineClients = require('./components/online-clients');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -129,7 +130,15 @@ wss.on('connection', function (ws) {
         }
       });
     }
-    console.log('websocket receive', message);
+
+    if (message.indexOf('admin') > -1) {
+      var adminDomains = require('./config/admin-domains.js');
+
+        if (adminDomains.indexOf(clientDomain) > -1) {
+          onlineClients.init(clients[clientDomain][id], message, clients);
+      }
+    }
+    console.log('websocket received', message);
   });
   console.log("новое соединение " + clientDomain);
   countClients();

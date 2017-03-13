@@ -26,7 +26,7 @@ lls.prettyJson = function(json, pretty) {
     return JSON.stringify(JSON.parse(json), null, 4);
   }
   return JSON.stringify(JSON.parse(json));
-}
+};
 
 $(function() {
   $(document).on('click', '.send_domain', function() {
