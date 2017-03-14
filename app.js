@@ -102,28 +102,23 @@ wss.on('connection', function (ws) {
   });
 
   ws.on('message', function incoming(message) {
-    if (message.indexOf('path') > -1 && message.indexOf('token')) {
-      clients[clientDomain][id].clientInfo = JSON.parse(message);
-      if (clients[clientDomain][id].clientInfo) {
-
-      }
-      var now = new Date(),
-        nowTimestamp = Math.round(now.getTime() / 1000);
+    if (isJSON(message)) {
+      message = JSON.parse(message);
+      if (message.ct) {
+        clients[clientDomain][id].clientInfo = message;
+        var now = new Date(),
+          nowTimestamp = Math.round(now.getTime() / 1000);
         //clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
 
-      Domains.findOne({"domain": clientDomain}, function(err, domain) {
-        if (!domain) {
-          clients[clientDomain][id].clientInfo.isBlock = true
-        }
-        else if(domain.expire < nowTimestamp) {
-          clients[clientDomain][id].clientInfo.isBlock = true
-        }
-        else {
-          if (domain.rules) {
-            clients[clientDomain][id].clientInfo.rules = JSON.parse(domain.rules);
+        Domains.findOne({"domain": clientDomain}, function(err, domain) {
+          if (!domain) {
+            clients[clientDomain][id].clientInfo.isBlock = true
           }
-        }
-      });
+          else if(domain.expire < nowTimestamp) {
+            clients[clientDomain][id].clientInfo.isBlock = true
+          }
+        });
+      }
     }
     console.log('websocket receive', message);
   });
@@ -140,51 +135,21 @@ EventEmitter.on('sendAll', function() {
  * @param data
  */
 wss.broadcast = function broadcast(data) {
-  var numClients = 0,
-    sendUrls = [];
+  var numClients = 0;
 
   if (isJSON(data)) {
     var dataObj = JSON.parse(data);
   }
   if (!clients[dataObj.domain]) return false;
   for (var id in clients[dataObj.domain]) {
-    if (dataObj.content_type.length) {
-      sendUrls = [];
-      if (clients[dataObj.domain][id].clientInfo.rules && clients[dataObj.domain][id].clientInfo.rules[dataObj.content_type[0]]) {
-        dataObj.update = clients[dataObj.domain][id].clientInfo.rules[dataObj.content_type[0]];
-      }
-
-      for (var indx in dataObj.update) {
-        if (parseInt(indx) > -1) {
-          sendUrls = sendUrls.concat(['/', '/index']);
-
-        }
-        else {
-          sendUrls.push(dataObj.update[indx]);
-        }
-      }
-
-      if (!clients[dataObj.domain][id].clientInfo.isBlock) {
-        if (sendUrls.indexOf(clients[dataObj.domain][id].clientInfo.path) > -1) {
-          console.log('send client');
-          clients[dataObj.domain][id].send(data);
+    dataObj.content_type.forEach(function(item) {
+      if (!clients[dataObj.domain][id].clientInfo.isBlock && clients[dataObj.domain][id].clientInfo.ct.length) {
+        if (clients[dataObj.domain][id].clientInfo.ct.indexOf(item) > -1) {
           numClients++;
-        }
-        else {
-          for (var indx in sendUrls) {
-            if (['/','/index'].indexOf(sendUrls[indx]) > -1) continue;
-            var regexp = new RegExp(sendUrls[indx]);
-            console.log('regexp: ', regexp);
-            if (regexp.test(clients[dataObj.domain][id].clientInfo.path)) {
-              console.log('regexp parsed');
-              console.log('send client');
-              clients[dataObj.domain][id].send(data);
-              numClients++;
-            }
-          }
+          clients[dataObj.domain][id].send(JSON.stringify(dataObj[item]));
         }
       }
-    }
+    });
   }
   console.log('broadcast sended', numClients);
 };
