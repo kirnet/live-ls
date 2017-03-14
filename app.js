@@ -23,6 +23,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
+var adminDomains = require('./config/admin-domains.js');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -80,15 +81,26 @@ app.use(function(err, req, res, next) {
 
 
 function countClients() {
-  var numClients = 0,
-      domains = '';
+  var domains = {},
+    numClients = 0,
+    receivers = [];
+
   for (var domain in clients) {
-    domains += domain + ' ';
+    if (!domains[domain]) {
+      domains[domain] = 0;
+    }
+
+    if (adminDomains.indexOf(domain) > -1) {
+      receivers.push(domain);
+    }
+
     for (var id in clients[domain] ) {
-      numClients++;
+      domains[domain]++;
+      numClients++
     }
   }
-  console.log('active clients: ', numClients, ' ' ,domains);
+  onlineClients.refresh(receivers, clients, domains);
+  console.log('active clients: ', numClients, ' ' , domains);
 }
 
 wss.on('connection', function (ws) {
@@ -126,8 +138,6 @@ wss.on('connection', function (ws) {
       }
 
       if (message.admin) {
-        var adminDomains = require('./config/admin-domains.js');
-
         if (adminDomains.indexOf(clientDomain) > -1) {
           onlineClients.init(clients[clientDomain][id], message, clients);
         }

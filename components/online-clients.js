@@ -22,15 +22,27 @@ module.exports.getList = function(receiver, clients) {
     for (var id in clients[domain]) {
       counter++;
     }
-    html += '<tr>' +
-              '<td>'+ domain +'</td>' +
-              '<td class="client_counter">'+ counter +'</td>' +
-            '<tr>';
-
+    if (counter > 0) {
+      html += '<tr>' +
+        '<td data-domain="' + domain + '" class="client_domain">' + domain + '</td>' +
+        '<td class="client_counter">' + counter + '</td>' +
+        '<tr>';
+    }
   }
   html += '</table>';
   receiver.send(html);
   console.log('show all');
 };
 
-//module.exports.
+module.exports.refresh = function(receivers, clients, domains) {
+  for (var i = 0; i < receivers.length; i++) {
+    if (clients[receivers[i]]) {
+      for (var id in clients[receivers[i]]) {
+        clients[receivers[i]][id].send(JSON.stringify(domains));
+      }
+    }
+  }
+  // for (var domain in domains) {
+  //
+  // }
+};
