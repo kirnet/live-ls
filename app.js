@@ -172,7 +172,7 @@ wss.broadcast = function broadcast(data) {
         }
         else {
           for (var indx in sendUrls) {
-            if (indx.length == 1) continue;
+            if (['/','/index'].indexOf(sendUrls[indx]) > -1) continue;
             var regexp = new RegExp(sendUrls[indx]);
             console.log('regexp: ', regexp);
             if (regexp.test(clients[dataObj.domain][id].clientInfo.path)) {

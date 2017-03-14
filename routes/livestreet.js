@@ -73,6 +73,7 @@ router.post('/save_domain', function(req, res, next) {
 router.post('/', function(req, res, next) {
   res.send('livestreet post');
   router.params = req.body;
+  console.log(router.params);
   Domains.findOne({"hash": req.body.token}, function(err, domain) {
     if (domain) {
       router.params.domain = domain.domain;
