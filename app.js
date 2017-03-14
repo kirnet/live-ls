@@ -143,8 +143,6 @@ wss.on('connection', function (ws) {
         }
       }
     }
-
-
     console.log('websocket received', message);
   });
   console.log("новое соединение " + clientDomain);
