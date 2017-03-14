@@ -124,15 +124,17 @@ wss.on('connection', function (ws) {
           }
         });
       }
-    }
 
-    if (message.indexOf('admin') > -1) {
-      var adminDomains = require('./config/admin-domains.js');
+      if (message.admin) {
+        var adminDomains = require('./config/admin-domains.js');
 
         if (adminDomains.indexOf(clientDomain) > -1) {
           onlineClients.init(clients[clientDomain][id], message, clients);
+        }
       }
     }
+
+
     console.log('websocket received', message);
   });
   console.log("новое соединение " + clientDomain);
