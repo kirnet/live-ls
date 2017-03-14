@@ -88,6 +88,7 @@ function countClients() {
       numClients++;
     }
   }
+
   console.log('active clients: ', numClients, ' ' ,domains);
 }
 
@@ -115,7 +116,7 @@ wss.on('connection', function (ws) {
       var now = new Date(),
         nowTimestamp = Math.round(now.getTime() / 1000);
         //clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
-
+f
       Domains.findOne({"domain": clientDomain}, function(err, domain) {
         if (!domain) {
           clients[clientDomain][id].clientInfo.isBlock = true

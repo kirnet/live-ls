@@ -17,7 +17,12 @@ $(function() {
 
   lls.ws.onmessage = function(event) {
     if (!lls.isJson(event.data)) {
+      var counter = 0;
       $('#clients').html(event.data);
+      $('.client_counter').each(function() {
+        counter += parseInt($(this).text());
+      });
+      $('#totalClients').html(counter);
     }
 
   };

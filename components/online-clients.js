@@ -24,7 +24,7 @@ module.exports.getList = function(receiver, clients) {
     }
     html += '<tr>' +
               '<td>'+ domain +'</td>' +
-              '<td>'+ counter +'</td>' +
+              '<td class="client_counter">'+ counter +'</td>' +
             '<tr>';
 
   }
@@ -32,3 +32,5 @@ module.exports.getList = function(receiver, clients) {
   receiver.send(html);
   console.log('show all');
 };
+
+//module.exports.
