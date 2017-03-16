@@ -158,18 +158,32 @@ EventEmitter.on('sendAll', function() {
  * @param data
  */
 wss.broadcast = function broadcast(data) {
-  var numClients = 0;
+  var numClients = 0,
+      objClone = {};
 
   if (isJSON(data)) {
     var dataObj = JSON.parse(data);
+    delete dataObj.token;
   }
   if (!clients[dataObj.domain]) return false;
   for (var id in clients[dataObj.domain]) {
     dataObj.content_type.forEach(function(item) {
       if (!clients[dataObj.domain][id].clientInfo.isBlock && clients[dataObj.domain][id].clientInfo.ct.length) {
         if (clients[dataObj.domain][id].clientInfo.ct.indexOf(item) > -1) {
-          numClients++;
-          clients[dataObj.domain][id].send(JSON.stringify(dataObj[item]));
+          if (dataObj[item].users) {
+            if (dataObj[item].users.indexOf(clients[dataObj.domain][id].clientInfo.user) > -1) {
+              numClients++;
+              for (var i in dataObj[item]) {
+                if (i != 'users') objClone[i] = dataObj[item][i]
+              }
+              clients[dataObj.domain][id].send(JSON.stringify(objClone));
+            }
+          }
+          else {
+            numClients++;
+            clients[dataObj.domain][id].send(JSON.stringify(dataObj[item]));
+          }
+
         }
       }
     });
