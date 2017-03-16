@@ -173,6 +173,7 @@ wss.broadcast = function broadcast(data) {
           if (dataObj[item].users) {
             if (dataObj[item].users.indexOf(clients[dataObj.domain][id].clientInfo.user) > -1) {
               numClients++;
+              objClone = {};
               for (var i in dataObj[item]) {
                 if (i != 'users') objClone[i] = dataObj[item][i]
               }
