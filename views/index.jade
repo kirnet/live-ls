@@ -16,7 +16,8 @@ block content
           tr
             th Домен
             th Истекает
-            th Правила
+            //th Правила
+            th Счетчик
             th Действия
           for domain, i in domains
             tr
@@ -24,8 +25,12 @@ block content
                 input.form-control.domain.show_save(type='text', value="#{domain.domain}", disabled)
               td
                 input.form-control.show_save.expire(type='text', value="#{ moment(1000 * domain.expire).format('DD.MM.YYYY') }")
+              //td
+              //  input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
               td
-                input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
+                input.form-control.counter(style="width:57px;display:inline" type='text', value="#{domain.counter || 0}", disabled)
+                input.form-control.max_counter.show_save(style="width:57px;display:inline" type='text', value="#{domain.maxCounter || 0}")
+
               td.action_column
                 button.save_domain.btn.btn-primary.hidden(type='button') Сохранить
                 span &nbsp;

@@ -24,7 +24,9 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
 var adminDomains = require('./config/admin-domains.js');
-
+var nowTimestamp = Math.round((new Date()).getTime() / 1000);
+//Start scheduler (clear domains counters)
+require('./components/scheduler.js').clearCounters();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -54,7 +56,6 @@ passport.deserializeUser(Account.deserializeUser());
 var Domains = require('./models/domains.js');
 
 mongoose.connect('mongodb://localhost/live_ls');
-
 
 app.use('/', index);
 app.use('/users', users);
@@ -123,8 +124,6 @@ wss.on('connection', function (ws) {
       message = JSON.parse(message);
       if (message.ct) {
         clients[clientDomain][id].clientInfo = message;
-        var now = new Date(),
-          nowTimestamp = Math.round(now.getTime() / 1000);
         //clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
 
         Domains.findOne({"domain": clientDomain}, function(err, domain) {
@@ -194,4 +193,5 @@ wss.broadcast = function broadcast(data) {
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
+module.exports.nowTimestamp = nowTimestamp;
 

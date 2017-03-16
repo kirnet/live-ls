@@ -45,7 +45,7 @@ $(function() {
     });
   });
 
-  $(document).on('keyup', '.show_save', function() {
+  $(document).on('keyup change', '.show_save', function() {
     $(this).parents(':eq(1)').find('button.hidden').removeClass('hidden');
   });
 
@@ -79,7 +79,8 @@ $(function() {
         id: row.find('[data-id]').data('id'),
         domain: row.find('input.domain').val(),
         expire: row.find('input.expire').val(),
-        rules: row.find('input.rules').val()
+        rules: row.find('input.rules').val(),
+        maxCounter: row.find('input.max_counter').val()
       },
       success: function(data) {
         if (data.result) {
@@ -105,4 +106,8 @@ $(function() {
 
   });
 
-});
+  $('.expire').datepicker({
+    regional: 'ru'
+  });
+
+}); //autoRun

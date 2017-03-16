@@ -27,3 +27,7 @@ textarea.edit_json {
 .right {
   float: right;
 }
+
+.expire {
+  width: 100px;
+}

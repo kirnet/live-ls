@@ -44,12 +44,12 @@ router.post('/add_domain', function(req, res, next) {
   }
 });
 
-router.post('/save_domain', function(req, res, next) {
+router.post('/save_domain', function(req, res, next) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
   if (req.body.domain) {
 
     var isJSON = require('is-json');
     req.body.expire = moment(req.body.expire, 'DD.MM.YYYY').unix();
-    if (!isJSON(req.body.rules) && req.body.rules != '{}') {
+    if (req.body.rules && !isJSON(req.body.rules) && req.body.rules != '{}') {
       res.send(JSON.stringify({
         result: false,
         message: 'Not valid JSON'
@@ -59,7 +59,9 @@ router.post('/save_domain', function(req, res, next) {
 
       Domains.findOneAndUpdate({ domain: req.body.domain }, {
           expire: req.body.expire,
-          rules: req.body.rules
+          rules: req.body.rules,
+          //counter: req.body.counter,
+          maxCounter: req.body.maxCounter
         },
         function(err, domain) {
           if (err) throw err;
@@ -73,11 +75,22 @@ router.post('/save_domain', function(req, res, next) {
 router.post('/', function(req, res, next) {
   res.send('livestreet post');
   router.params = req.body;
-  console.log(router.params);
+
   Domains.findOne({"hash": req.body.token}, function(err, domain) {
+    var allow = true;
     if (domain) {
-      router.params.domain = domain.domain;
-      app.EventEmitter.emit('sendAll');
+      if (domain.expire < app.nowTimestamp) {
+        if (domain.counter >= domain.maxCounter) {
+          allow = false;
+        }
+        else {
+          Domains.update({"hash": req.body.token}, { $inc: { counter: 1 }}).exec();
+        }
+      }
+      if (allow) {
+        router.params.domain = domain.domain;
+        app.EventEmitter.emit('sendAll');
+      }
     }
   });
 
