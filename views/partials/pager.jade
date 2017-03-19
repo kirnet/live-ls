@@ -1,0 +1,43 @@
+if pages > 1
+
+  ul.pagination.pagination-sm.dynamic
+
+  script(type="text/javascript").
+    var addUrlParams = function (params) {
+      params = params || {};
+      var search = window.location.search.substr(1),
+        keyVal = {},
+        key,
+        str = '?',
+        active = 1;
+
+      search = search.split('&');
+      search.forEach(function (item) {
+        item = item.split('=');
+        if (item[1]) {
+          keyVal[item[0]] = item[1];
+          if (item[0] == 'page') {
+            active = item[1];
+          }
+        }
+      });
+
+      for (key in params) {
+        keyVal[key] = params[key];
+      }
+
+      for (key in keyVal) {
+        str += key + '=' + keyVal[key] + '&';
+      }
+      return {
+        str: str.slice(0, -1),
+        active: active
+      };
+    };
+
+    var ul = $('.dynamic');
+
+    for (var i = 0; i < #{pages}; i++) {
+      var query = addUrlParams({page: i + 1});
+      ul.append('<li ' + (i + 1 == query.active ? 'class="active"' : '') + '><a href="'+ query.str +'">'+ (i + 1) +'</a></li>');
+    }

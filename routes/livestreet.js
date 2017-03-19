@@ -36,8 +36,12 @@ router.post('/add_domain', function(req, res, next) {
 
     newDomain.save(function(err) {
       if (err)  {
-        res.send(err);
-        return false;
+        if (err.code == 11000){
+          req.flash('error', 'Такой домен уже существует');
+        }
+        req.flash('error', 'Ошибка блять');
+        //res.send(err);
+        //return false;
       };
       res.redirect('/');
     });
