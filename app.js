@@ -13,6 +13,7 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var livestreet = require('./routes/livestreet');
 var clientsPage = require('./routes/clients');
+var settingsPage = require('./routes/settings');
 
 var app = express();
 var WebSocket = require('ws');
@@ -50,6 +51,20 @@ app.use(passport.session());
 
 var Account = require('./models/account.js');
 passport.use(new LocalStrategy(Account.authenticate()));
+// passport.use(new LocalStrategy(
+//   function(username, password, done) {
+//     Account.findOne({ username: username }, function (err, user) {
+//       if (err) { return done(err); }
+//       if (!user) {
+//         return done(null, false, { message: 'Incorrect username.' });
+//       }
+//       if (!user.validPassword(password)) {
+//         return done(null, false, { message: 'Incorrect password.' });
+//       }
+//       return done(null, user);
+//     });
+//   }
+// ));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
@@ -61,6 +76,7 @@ app.use('/', index);
 app.use('/users', users);
 app.use('/livestreet', livestreet);
 app.use('/clients', clientsPage);
+app.use('/settings', settingsPage);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -130,9 +146,9 @@ wss.on('connection', function (ws) {
           if (!domain) {
             clients[clientDomain][id].clientInfo.isBlock = true
           }
-          else if(domain.expire < nowTimestamp) {
-            clients[clientDomain][id].clientInfo.isBlock = true
-          }
+          // else if(domain.expire < nowTimestamp) {
+          //   clients[clientDomain][id].clientInfo.isBlock = true
+          // }
         });
       }
 

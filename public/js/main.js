@@ -7,7 +7,6 @@ lls.isJson = function(string) {
     JSON.parse(string);
   }
   catch(e) {
-    console.log('not json');
     return false;
   }
   return true;

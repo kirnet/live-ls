@@ -7,7 +7,7 @@ const Domains = require('../models/domains.js');
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
-  if (!req.user) {
+  if (!req.isAuthenticated()) {
     res.redirect('/login');
     return false;
   }

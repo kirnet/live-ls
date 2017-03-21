@@ -31,3 +31,8 @@ textarea.edit_json {
 .expire {
   width: 100px;
 }
+
+.user_password {
+  width: 300px;
+  margin-top: 20px;
+}

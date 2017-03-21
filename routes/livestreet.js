@@ -7,7 +7,6 @@ var Domains = require('../models/domains.js');
 var moment = require('moment');
 var crypto = require('crypto');
 
-
 moment.locale('ru');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -15,6 +14,10 @@ router.get('/', function(req, res, next) {
 });
 
 router.delete('/delete_domain', function(req, res, next) {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return false;
+  }
   if (req.body.domain) {
     Domains.findOneAndRemove({ domain: req.body.domain }, function(err) {
       if (err) throw err;
@@ -27,6 +30,10 @@ router.delete('/delete_domain', function(req, res, next) {
 });
 
 router.post('/add_domain', function(req, res, next) {
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return false;
+  }
   if (req.body.domain) {
     var newDomain = new Domains({
       domain: req.body.domain,
@@ -49,6 +56,10 @@ router.post('/add_domain', function(req, res, next) {
 });
 
 router.post('/save_domain', function(req, res, next) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+  if (!req.isAuthenticated()) {
+    res.redirect('/login');
+    return false;
+  }
   if (req.body.domain) {
 
     var isJSON = require('is-json');
