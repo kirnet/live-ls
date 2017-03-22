@@ -10,11 +10,11 @@ block content
     fieldset
       legend Смена пароля
       label(for="old_pass") Старый пароль
-      input.form-control(type="text", name="password")#old_pass
+      input.form-control(type="password", name="password")#old_pass
       label(for="new_pass") Новый пароль
-      input.form-control(type="text", name="new_pass")#new_pass
+      input.form-control(type="password", name="new_pass")#new_pass
       label(for="confirm_pass") повторите пароль
-      input.form-control(type="text", name="confirm_pass")#confirm_pass
+      input.form-control(type="password", name="confirm_pass")#confirm_pass
       input(type="hidden", value="kirnet" name="username")
       br
       input(type="submit", value="Сохранить").form-control.btn.btn-primary#change_pass
