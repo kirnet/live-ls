@@ -82,7 +82,8 @@ router.post('/save_domain', function(req, res, next) {
           if (err) throw err;
           console.log(domain);
           res.send(JSON.stringify({result: true}));
-      });
+        }
+      );
     }
   }
 });

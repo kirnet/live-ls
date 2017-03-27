@@ -22,17 +22,35 @@ $(function() {
     }
     else {
       var data = JSON.parse(event.data);
-      lls.refreshTable(data);
+      console.log(data);
+      if (data.maxOnline != undefined) {
+        var online = $('#totalClients').text();
+        if (online > data.maxOnline) {
+          data.maxOnline = online;
+          this.send(JSON.stringify({admin: 1, updMaxOnline: data.maxOnline}));
+        }
+        $('#maxOnline').text(data.maxOnline);
+      }
+      else {
+        lls.refreshTable(data);
+      }
+
     }
   };
 
   lls.countTotal = function() {
-    var counter = 0;
+    var counter = 0,
+        maxSpan = $('#maxOnline'),
+        max = maxSpan.text() || 0;
 
     $('.client_counter').each(function() {
       counter += parseInt($(this).text());
     });
     $('#totalClients').html(counter);
+    if (counter > max) {
+      lls.ws.send(JSON.stringify({admin: 1, updMaxOnline: 1}));
+      maxSpan.text(counter);
+    }
   };
 
   lls.refreshTable = function(data) {
@@ -50,7 +68,6 @@ $(function() {
         var html = '<tr><td data-domain="'+ domain +'" class="client_domain">'+ domain +'</td>' +
           '<td class="client_counter">'+ data[domain] +'</td></tr>';
         $('table.table').find('tr:first').after(html);
-        console.log(data)
       }
     }
     lls.countTotal();

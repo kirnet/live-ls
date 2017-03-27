@@ -7,7 +7,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var isJSON = require('is-json');
-var onlineClients = require('./components/online-clients');
+var admin = require('./components/admin');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -47,11 +47,11 @@ app.use(flash());
 app.use(passport.session());
 
 var Account = require('./models/account.js');
+var Domains = require('./models/domains.js');
+
 passport.use(new LocalStrategy(Account.authenticate()));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
-
-var Domains = require('./models/domains.js');
 
 mongoose.connect('mongodb://localhost/live_ls');
 
@@ -79,7 +79,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-function countClients() {
+function initWs() {
   var domains = {},
     numClients = 0,
     receivers = [];
@@ -98,7 +98,7 @@ function countClients() {
       numClients++
     }
   }
-  onlineClients.refresh(receivers, clients, domains);
+  admin.refresh(receivers, clients, domains);
   console.log('active clients: ', numClients, ' ' , domains);
 }
 // wss.setKeepAlive();
@@ -122,7 +122,7 @@ wss.on('connection', function (ws) {
   ws.on('close', function() {
     console.log('соединение закрыто ' + clientDomain);
     delete clients[clientDomain][id];
-    countClients();
+    initWs();
   });
 
   ws.on('ping', function(ts) {
@@ -142,28 +142,26 @@ wss.on('connection', function (ws) {
       message = JSON.parse(message);
       if (message.ct) {
         clients[clientDomain][id].clientInfo = message;
-        //clientOrigin = clients[id].upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
-
         Domains.findOne({"domain": clientDomain}, function(err, domain) {
           if (!domain) {
             clients[clientDomain][id].clientInfo.isBlock = true
           }
-          // else if(domain.expire < nowTimestamp) {
-          //   clients[clientDomain][id].clientInfo.isBlock = true
-          // }
         });
       }
 
       if (message.admin) {
-        if (adminDomains.indexOf(clientDomain) > -1) {
-          onlineClients.init(clients[clientDomain][id], message, clients);
+        if (message.updMaxOnline) {
+          admin.updateMaxOnlineCounter(clients);
+        }
+        else if (adminDomains.indexOf(clientDomain) > -1) {
+          admin.init(clients[clientDomain][id], message, clients);
         }
       }
     }
     console.log('websocket received', message);
   });
   console.log("новое соединение " + clientDomain);
-  countClients();
+  initWs();
 });
 
 EventEmitter.on('sendAll', function() {
@@ -211,5 +209,4 @@ wss.broadcast = function broadcast(data) {
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
-// module.exports.nowTimestamp = nowTimestamp;
 
