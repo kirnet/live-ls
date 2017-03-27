@@ -24,7 +24,11 @@ block content
         table.table.domains
           tr
             th
-              a(href="")Домен
+              if sort.domain
+                a(href="#", data-sort="#{sort.domain}").sort_domain Домен
+              else
+                a(href="#", data-sort="1").sort_domain Домен
+              input(type="text", value="#{filter.domain || ''}" style="width:70%;display:inline;margin-left:5px").form-control#filter_domain
             th Истекает
             //th Правила
             th Счетчик

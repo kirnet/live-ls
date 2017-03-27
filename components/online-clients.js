@@ -39,6 +39,7 @@ module.exports.refresh = function(receivers, clients, domains) {
     if (clients[receivers[i]]) {
       for (var id in clients[receivers[i]]) {
         clients[receivers[i]][id].send(JSON.stringify(domains));
+        console.log('admin send');
       }
     }
   }

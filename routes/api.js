@@ -10,7 +10,7 @@ var crypto = require('crypto');
 moment.locale('ru');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('livestreet');
+  res.send('api');
 });
 
 router.delete('/delete_domain', function(req, res, next) {
@@ -25,7 +25,7 @@ router.delete('/delete_domain', function(req, res, next) {
     });
   }
   else {
-    res.send('delete livestreet');
+    res.send('delete api');
   }
 });
 
@@ -88,13 +88,15 @@ router.post('/save_domain', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
-  res.send('livestreet post');
+  res.send('api post');
   router.params = req.body;
 
   Domains.findOne({"hash": req.body.token}, function(err, domain) {
-    var allow = true;
+    var allow = true,
+        now = Math.round((new Date()).getTime() / 1000);
+
     if (domain) {
-      if (domain.expire < app.nowTimestamp) {
+      if (domain.expire < now) {
         if (domain.counter >= domain.maxCounter) {
           allow = false;
         }

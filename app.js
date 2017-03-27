@@ -11,7 +11,7 @@ var onlineClients = require('./components/online-clients');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var livestreet = require('./routes/livestreet');
+var api = require('./routes/api');
 var clientsPage = require('./routes/clients');
 var settingsPage = require('./routes/settings');
 
@@ -25,7 +25,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
 var adminDomains = require('./config/admin-domains.js');
-var nowTimestamp = Math.round((new Date()).getTime() / 1000);
+// var nowTimestamp = Math.round((new Date()).getTime() / 1000);
 //Start scheduler (clear domains counters)
 require('./components/scheduler.js').clearCounters();
 // view engine setup
@@ -33,14 +33,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(connection(mysql, require('./config/mysql.js'),'request'));
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(require('express-session')({
-  secret: 'keyboard cat',
+  secret: 'keyboard cat hash must ot token',
   resave: false,
   saveUninitialized: false
 }));
@@ -48,23 +46,8 @@ app.use(passport.initialize());
 app.use(flash());
 app.use(passport.session());
 
-
 var Account = require('./models/account.js');
 passport.use(new LocalStrategy(Account.authenticate()));
-// passport.use(new LocalStrategy(
-//   function(username, password, done) {
-//     Account.findOne({ username: username }, function (err, user) {
-//       if (err) { return done(err); }
-//       if (!user) {
-//         return done(null, false, { message: 'Incorrect username.' });
-//       }
-//       if (!user.validPassword(password)) {
-//         return done(null, false, { message: 'Incorrect password.' });
-//       }
-//       return done(null, user);
-//     });
-//   }
-// ));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
@@ -74,7 +57,7 @@ mongoose.connect('mongodb://localhost/live_ls');
 
 app.use('/', index);
 app.use('/users', users);
-app.use('/livestreet', livestreet);
+app.use('/api', api);
 app.use('/clients', clientsPage);
 app.use('/settings', settingsPage);
 
@@ -95,7 +78,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
 
 function countClients() {
   var domains = {},
@@ -119,20 +101,40 @@ function countClients() {
   onlineClients.refresh(receivers, clients, domains);
   console.log('active clients: ', numClients, ' ' , domains);
 }
-
+// wss.setKeepAlive();
 wss.on('connection', function (ws) {
   var id = Math.random(),
-      clientDomain = ws.upgradeReq.headers.origin.replace(/(http:\/\/|\/|https:\/\/)/g, '');
+      clientDomain = ws.upgradeReq.headers.origin;
+
+  if (!clientDomain) {
+    ws.terminate();
+    return false;
+  }
+
+  clientDomain = clientDomain.replace(/(http:\/\/|\/|https:\/\/)/g, '');
 
   if (!clients[clientDomain]) {
     clients[clientDomain] = {};
   }
+
   clients[clientDomain][id] = ws;
 
   ws.on('close', function() {
-    console.log('соединение закрыто ' + id);
+    console.log('соединение закрыто ' + clientDomain);
     delete clients[clientDomain][id];
     countClients();
+  });
+
+  ws.on('ping', function(ts) {
+    console.log("Got a ping", ts);
+  });
+
+  ws.on('pong', function(ts) {
+    console.log("Got a pong", ts);
+  });
+
+  ws.on('error', function() {
+    console.log('websocket error');
   });
 
   ws.on('message', function incoming(message) {
@@ -165,7 +167,7 @@ wss.on('connection', function (ws) {
 });
 
 EventEmitter.on('sendAll', function() {
-  wss.broadcast(JSON.stringify(livestreet.params));
+  wss.broadcast(JSON.stringify(api.params));
 });
 
 /**
@@ -209,5 +211,5 @@ wss.broadcast = function broadcast(data) {
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
-module.exports.nowTimestamp = nowTimestamp;
+// module.exports.nowTimestamp = nowTimestamp;
 

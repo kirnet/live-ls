@@ -106,8 +106,34 @@ $(function() {
 
   });
 
+  $('.sort_domain').click(function() {
+    var sort = $(this).data('sort'),
+      params;
+
+    if (sort == 1) {
+      sort = -1;
+    }
+    else {
+      sort = 1;
+    }
+    $(this).data('sort', sort);
+    params = lls.addUrlParams({sort: '{"domain":"' + sort +'"}'});
+    window.location.href = params;
+    console.log(params);
+    return false;
+  });
+
   $('.expire').datepicker({
     regional: 'ru'
+  });
+
+  $('#filter_domain').on('keypress', function(event) {
+    if (event.keyCode == 13) {
+      var domain = $(this).val();
+      window.location.href = lls.addUrlParams({filter:{'domain':domain}});
+      //console.log()
+    }
+
   });
 
 }); //autoRun

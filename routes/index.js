@@ -4,6 +4,7 @@ const express = require('express');
 const passport = require('passport');
 // const Account = require('../models/account');
 const Domains = require('../models/domains.js');
+var isJSON = require('is-json');
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
@@ -21,14 +22,22 @@ router.get('/', function(req, res, next) {
   var skip = page * perPage - perPage;
 
   Domains.count('domains', function(err, allDocs) {
-    Domains.find({}, {}, { skip: skip, limit: perPage, sort: {domain: 1} }, function(err, domains) {
+    var sort = req.query.sort && isJSON(req.query.sort) ? JSON.parse(req.query.sort) : {domain: 1},
+        filter = req.query.filter && isJSON(req.query.filter) ? JSON.parse(req.query.filter) : {},
+        mongoFilter = {};
+    for (var key in filter) {
+      mongoFilter[key] = new RegExp(filter[key]);
+    }
+    Domains.find(mongoFilter, {}, { skip: skip, limit: perPage, sort: sort }, function(err, domains) {
       if (err) throw err;
       res.render('index', {
         title: "Домены",
         domains: domains,
         moment: require('moment'),
         error: req.flash('error'),
-        pages: Math.ceil(allDocs / perPage)
+        pages: Math.ceil(allDocs / perPage),
+        sort: sort,
+        filter: filter
       });
     });
   });

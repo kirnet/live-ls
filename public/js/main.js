@@ -12,25 +12,30 @@ lls.isJson = function(string) {
   return true;
 };
 
-lls.addUrlParams = function(params) {
-  params = params || {};
+lls.getUrlParams = function() {
   var search = window.location.search.substr(1),
-      keyVal = {},
-      key,
-      str = '?';
-
+      keyVal = {};
   search = search.split('&');
   search.forEach(function(item) {
     item = item.split('=');
-    keyVal[item[0]] = item[1];
+    if (item[0]) {
+      keyVal[item[0]] = item[1];
+    }
   });
+  return keyVal;
+};
 
+lls.addUrlParams = function(params) {
+  params = params || {};
+  var keyVal = this.getUrlParams(),
+      key,
+      str = '?';
   for (key in params) {
     keyVal[key] = params[key];
   }
 
   for (key in keyVal) {
-    str += key + '=' + keyVal[key] + '&';
+    str += key + '=' + (typeof keyVal[key] == 'object' ? JSON.stringify(keyVal[key]) : keyVal[key]) + '&';
   }
   return str.slice(0, -1);
 };
