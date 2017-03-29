@@ -16,20 +16,22 @@ $(function() {
   };
 
   lls.ws.onmessage = function(event) {
+    console.log('receive websocket');
     if (!lls.isJson(event.data)) {
+      console.log(event.data.substr(0, 80));
       $('#clients').html(event.data);
-      lls.countTotal();
+      //lls.countTotal();
     }
     else {
       var data = JSON.parse(event.data);
       console.log(data);
       if (data.maxOnline != undefined) {
         var online = $('#totalClients').text();
-        if (online > data.maxOnline) {
+        if (parseInt(online) > data.maxOnline) {
           data.maxOnline = online;
-          this.send(JSON.stringify({admin: 1, updMaxOnline: data.maxOnline}));
         }
         $('#maxOnline').text(data.maxOnline);
+        lls.countTotal();
       }
       else {
         lls.refreshTable(data);
@@ -38,24 +40,26 @@ $(function() {
     }
   };
 
-  lls.countTotal = function() {
-    var counter = 0,
-        maxSpan = $('#maxOnline'),
+  lls.countTotal = function(counter) {
+    var maxSpan = $('#maxOnline'),
         max = maxSpan.text() || 0;
-
-    $('.client_counter').each(function() {
-      counter += parseInt($(this).text());
-    });
+    if (!counter) {
+      $('.client_counter').each(function() {
+        counter += parseInt($(this).text());
+      });
+    }
     $('#totalClients').html(counter);
     if (counter > max) {
-      lls.ws.send(JSON.stringify({admin: 1, updMaxOnline: 1}));
+      //lls.ws.send(JSON.stringify({admin: 1, updMaxOnline: 1}));
       maxSpan.text(counter);
     }
   };
 
   lls.refreshTable = function(data) {
+    var counter = 0;
     for (var domain in data) {
       var td = $('.client_domain[data-domain="'+ domain +'"]');
+      counter += data[domain];
       if (td.length) {
         if (data[domain] == 0) {
           td.parent().remove();
@@ -70,7 +74,7 @@ $(function() {
         $('table.table').find('tr:first').after(html);
       }
     }
-    lls.countTotal();
+    lls.countTotal(counter);
   };
 
 });

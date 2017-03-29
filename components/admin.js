@@ -2,6 +2,8 @@
 
 var isJSON = require('is-json');
 var ServerInfo = require('../models/serverinfo');
+var maxOnline = 0;
+var onlineCounter = 0;
 
 module.exports.init = function(receiver, message, clients) {
   message = isJSON(message) ? JSON.parse(message) : message;
@@ -29,18 +31,6 @@ module.exports.getList = function(receiver, clients) {
     }
   }
   html += '</table>';
-
-  ServerInfo.findOne({}, function(err, info) {
-    if (info === null) {
-      info = new ServerInfo();
-      info.maxOnlineCounter = 0;
-      info.save(function (err) {
-        if (err) console.log(err);
-      });
-    }
-    receiver.send(JSON.stringify({maxOnline:info.maxOnlineCounter}));
-  });
-
   receiver.send(html);
   console.log('show all');
 };
@@ -50,10 +40,20 @@ module.exports.refresh = function(receivers, clients, domains) {
     if (clients[receivers[i]]) {
       for (var id in clients[receivers[i]]) {
         clients[receivers[i]][id].send(JSON.stringify(domains));
-        console.log('admin send');
       }
     }
   }
+
+  if (!this.maxOnline) {
+    this.getMaxOnline(function (maxOnline) {
+      this.maxOnline = maxOnline;
+      this.updateMaxOnlineCounter(this.maxOnline, this.onlineCounter);
+    });
+  }
+  else {
+    this.updateMaxOnlineCounter(this.maxOnline, this.onlineCounter);
+  }
+
 };
 
 module.exports.countOnline = function(clients, byHost) {
@@ -72,13 +72,39 @@ module.exports.countOnline = function(clients, byHost) {
   return numClients;
 };
 
-module.exports.updateMaxOnlineCounter = function(clients) {
-  var count = this.countOnline(clients);
+module.exports.getMaxOnline = function(cb) {
+  ServerInfo.findOne({}, function (err, info) {
+    if (info === null) {
+      info = new ServerInfo();
+      info.maxOnlineCounter = 0;
+      info.save(function (err) {
+        if (err) console.log(err);
+      });
+    }
+    if (cb) {
+      cb(maxOnline);
+    }
+    else {
+      this.maxOnline = info.maxOnlineCounter;
+    }
+    console.log('from mongo', info.maxOnlineCounter);
+  });
+};
+
+module.exports.updateMaxOnlineCounter = function(maxOnline, online) {
+  if (maxOnline >= online) {
+    return false;
+  }
+  maxOnline = online;
   ServerInfo.findOneAndUpdate({}, {
-      maxOnlineCounter: count
+      maxOnlineCounter: maxOnline
     },
-    function(err, row) {
+    function(err) {
       if (err) throw err;
+      console.log('save counter');
     }
   );
 };
+
+module.exports.maxOnline = maxOnline;
+module.exports.onlineCounter = onlineCounter;

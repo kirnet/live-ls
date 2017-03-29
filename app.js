@@ -81,7 +81,6 @@ app.use(function(err, req, res, next) {
 
 function initWs() {
   var domains = {},
-    numClients = 0,
     receivers = [];
 
   for (var domain in clients) {
@@ -95,12 +94,12 @@ function initWs() {
 
     for (var id in clients[domain] ) {
       domains[domain]++;
-      numClients++
     }
   }
   admin.refresh(receivers, clients, domains);
-  console.log('active clients: ', numClients, ' ' , domains);
+  console.log('active clients: ', admin.onlineCounter, ' ' , domains);
 }
+
 // wss.setKeepAlive();
 wss.on('connection', function (ws) {
   var id = Math.random(),
@@ -122,6 +121,7 @@ wss.on('connection', function (ws) {
   ws.on('close', function() {
     console.log('соединение закрыто ' + clientDomain);
     delete clients[clientDomain][id];
+    admin.onlineCounter--;
     initWs();
   });
 
@@ -150,10 +150,7 @@ wss.on('connection', function (ws) {
       }
 
       if (message.admin) {
-        if (message.updMaxOnline) {
-          admin.updateMaxOnlineCounter(clients);
-        }
-        else if (adminDomains.indexOf(clientDomain) > -1) {
+        if (adminDomains.indexOf(clientDomain) > -1) {
           admin.init(clients[clientDomain][id], message, clients);
         }
       }
@@ -161,6 +158,7 @@ wss.on('connection', function (ws) {
     console.log('websocket received', message);
   });
   console.log("новое соединение " + clientDomain);
+  admin.onlineCounter++;
   initWs();
 });
 
@@ -206,6 +204,8 @@ wss.broadcast = function broadcast(data) {
   }
   console.log('broadcast sended', numClients);
 };
+
+//admin.getMaxOnlineCounter();
 
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
