@@ -205,8 +205,6 @@ wss.broadcast = function broadcast(data) {
   console.log('broadcast sended', numClients);
 };
 
-//admin.getMaxOnlineCounter();
-
 module.exports.app = app;
 module.exports.EventEmitter = EventEmitter;
 

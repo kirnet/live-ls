@@ -46,14 +46,12 @@ module.exports.refresh = function(receivers, clients, domains) {
 
   if (!this.maxOnline) {
     this.getMaxOnline(function (maxOnline) {
-      this.maxOnline = maxOnline;
-      this.updateMaxOnlineCounter(this.maxOnline, this.onlineCounter);
+      module.exports.updateMaxOnlineCounter(maxOnline, module.exports.onlineCounter);
     });
   }
   else {
-    this.updateMaxOnlineCounter(this.maxOnline, this.onlineCounter);
+    module.exports.updateMaxOnlineCounter(module.exports.maxOnline, module.exports.onlineCounter);
   }
-
 };
 
 module.exports.countOnline = function(clients, byHost) {
@@ -81,11 +79,12 @@ module.exports.getMaxOnline = function(cb) {
         if (err) console.log(err);
       });
     }
+
     if (cb) {
-      cb(maxOnline);
+      cb(info.maxOnlineCounter);
     }
     else {
-      this.maxOnline = info.maxOnlineCounter;
+      module.exports.maxOnline = info.maxOnlineCounter;
     }
     console.log('from mongo', info.maxOnlineCounter);
   });
@@ -97,7 +96,7 @@ module.exports.updateMaxOnlineCounter = function(maxOnline, online) {
   }
   maxOnline = online;
   ServerInfo.findOneAndUpdate({}, {
-      maxOnlineCounter: maxOnline
+      maxOnlineCounter: parseInt(maxOnline)
     },
     function(err) {
       if (err) throw err;
