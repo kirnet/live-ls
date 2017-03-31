@@ -44,8 +44,8 @@ module.exports.refresh = function(receivers, clients, domains) {
     }
   }
 
-  if (!this.maxOnline) {
-    this.getMaxOnline(function (maxOnline) {
+  if (!module.exports.maxOnline) {
+    module.exports.getMaxOnline(function (maxOnline) {
       module.exports.updateMaxOnlineCounter(maxOnline, module.exports.onlineCounter);
     });
   }
@@ -78,6 +78,7 @@ module.exports.getMaxOnline = function(cb) {
       info.save(function (err) {
         if (err) console.log(err);
       });
+      console.log('from mongo', info.maxOnlineCounter);
     }
 
     if (cb) {
@@ -86,7 +87,6 @@ module.exports.getMaxOnline = function(cb) {
     else {
       module.exports.maxOnline = info.maxOnlineCounter;
     }
-    console.log('from mongo', info.maxOnlineCounter);
   });
 };
 
@@ -100,6 +100,7 @@ module.exports.updateMaxOnlineCounter = function(maxOnline, online) {
     },
     function(err) {
       if (err) throw err;
+      module.exports.maxOnline = maxOnline;
       console.log('save counter');
     }
   );

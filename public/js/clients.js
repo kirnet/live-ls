@@ -18,13 +18,10 @@ $(function() {
   lls.ws.onmessage = function(event) {
     console.log('receive websocket');
     if (!lls.isJson(event.data)) {
-      console.log(event.data.substr(0, 80));
       $('#clients').html(event.data);
-      //lls.countTotal();
     }
     else {
       var data = JSON.parse(event.data);
-      console.log(data);
       if (data.maxOnline != undefined) {
         var online = $('#totalClients').text();
         if (parseInt(online) > data.maxOnline) {
@@ -36,7 +33,6 @@ $(function() {
       else {
         lls.refreshTable(data);
       }
-
     }
   };
 

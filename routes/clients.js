@@ -10,26 +10,18 @@ router.get('/', function(req, res, next) {
     return false;
   }
 
-  //if (!admin.maxOnline) {
-    serverInfo.findOne({}, function (err, info) {
-      if (info === null) {
-        info = new ServerInfo();
-        info.maxOnlineCounter = 0;
-        info.save(function (err) {
-          if (err) console.log(err);
-        });
-      }
-      console.log('from mongo', info.maxOnlineCounter);
-      admin.maxOnline = info.maxOnlineCounter;
-      res.render('clients', {maxOnline: admin.maxOnline});
-      //admin.updateMaxOnlineCounter(admin.maxOnline, admin.onlineCounter);
-    });
-  // }
-  // else {
-  //   res.render('clients', {maxOnline: admin.maxOnline});
-  //   //admin.updateMaxOnlineCounter(admin.maxOnline, admin.onlineCounter);
-  // }
-
+  serverInfo.findOne({}, function (err, info) {
+    if (info === null) {
+      info = new ServerInfo();
+      info.maxOnlineCounter = 0;
+      info.save(function (err) {
+        if (err) console.log(err);
+      });
+    }
+    console.log('from mongo', info.maxOnlineCounter);
+    admin.maxOnline = info.maxOnlineCounter;
+    res.render('clients', {maxOnline: admin.maxOnline});
+  });
 });
 
 module.exports = router;

@@ -2,10 +2,9 @@
 
 const express = require('express');
 const passport = require('passport');
-// const Account = require('../models/account');
 const Domains = require('../models/domains.js');
-var isJSON = require('is-json');
 const router = express.Router();
+var isJSON = require('is-json');
 
 router.get('/', function(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -47,12 +46,12 @@ router.get('/login', function(req, res, next) {
   res.render('login');
 });
 
-router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res, next) {
+router.post('/login', passport.authenticate('local', { failureRedirect: '/login', failureFlash: false }), function(req, res, next) {
   req.session.save(function(err) {
     if (err) {
       return next(err);
     }
-  res.redirect('/');
+    res.redirect('/');
   });
 });
 
