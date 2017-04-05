@@ -8,12 +8,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var isJSON = require('is-json');
 var admin = require('./components/admin');
+var validator = require('express-validator');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 var api = require('./routes/api');
 var clientsPage = require('./routes/clients');
 var settingsPage = require('./routes/settings');
+var profile = require('./routes/profile');
 
 var app = express();
 var WebSocket = require('ws');
@@ -24,9 +26,8 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
-var adminDomains = require('./config/admin-domains.js');
-// var nowTimestamp = Math.round((new Date()).getTime() / 1000);
-//Start scheduler (clear domains counters)
+var config = require('./config/main.js');
+
 require('./components/scheduler.js').clearCounters();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,6 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(validator());
 app.use(cookieParser());
 app.use(require('express-session')({
   secret: 'keyboard cat hash must ot token',
@@ -88,7 +90,7 @@ function initWs() {
       domains[domain] = 0;
     }
 
-    if (adminDomains.indexOf(domain) > -1) {
+    if (config.adminDomains.indexOf(domain) > -1) {
       receivers.push(domain);
     }
 
@@ -150,7 +152,7 @@ wss.on('connection', function (ws) {
       }
 
       if (message.admin) {
-        if (adminDomains.indexOf(clientDomain) > -1) {
+        if (config.adminDomains.indexOf(clientDomain) > -1) {
           admin.init(clients[clientDomain][id], message, clients);
         }
       }

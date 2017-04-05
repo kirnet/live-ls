@@ -7,3 +7,7 @@ block content
     .form-group
       input.form-control(type='password', name="password", placeholder='Password')
     button.btn.btn-primary(type='submit') Войти
+    | &nbsp;
+    if allowSingUp
+      button.btn.btn-primary(type='button')
+        a(href='/registration')  Регистрация

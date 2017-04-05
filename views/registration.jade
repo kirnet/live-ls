@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  script(src="/js/registration.js")
+  form(role='form', action="/registration", method="post", style='max-width: 300px;')#reg_form
+    .form-group
+      input.form-control(type='text', name="username", placeholder='Login')
+    .form-group
+      input.form-control(type='password', name="password", placeholder='Password')
+    .form-group
+      input.form-control(type='password', name="confirm_password", placeholder='Confirm password')
+    button.btn.btn-primary(type='submit')#reg_button Сохранить

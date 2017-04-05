@@ -8,8 +8,8 @@ const Domains = new Schema({
   hash      : String,
   expire    : { type: Number, required: true },
   rules     : Object,
-  counter   : { type:Number, default: 0},
-  maxCounter: { type:Number, default: 0}
+  counter   : { type: Number, default: 0 },
+  maxCounter: { type: Number, default: 0 }
 });
 
 module.exports = mongoose.model('domains', Domains);
