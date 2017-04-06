@@ -19,7 +19,6 @@ router.use(function (req, res, next) {
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.render('settings');
-  next();
 });
 
 router.post('/changePassword', function(req, res, next) {

@@ -19,7 +19,7 @@ router.get('/', function(req, res, next) {
     return false;
   }
 
-  var perPage = 50,
+  var perPage = config.perPage,
       page = 1;
 
   if (req.query.page && parseInt(req.query.page) > 0) {

@@ -4,11 +4,11 @@ block content
   script(src="/js/index.js")
   include partials/exit
   div
-    include ./partials/tabs.jade
+    include ./partials/tabs
     if (error && error.length)
       script(type="text/javascript").
         $.toast({
-          text: '#{error[0]}',
+          text: error[0],
           showHideTransition: 'fade',
           position: 'top-right',
           icon: 'error'
@@ -25,10 +25,10 @@ block content
           tr
             th
               if sort.domain
-                a(href="#", data-sort="#{sort.domain}").sort_domain Домен
+                a(href="#", data-sort=sort.domain).sort_domain Домен
               else
                 a(href="#", data-sort="1").sort_domain Домен
-              input(type="text", value="#{filter.domain || ''}" style="width:70%;display:inline;margin-left:5px").form-control#filter_domain
+              input(type="text", value=(filter.domain || '') style="width:70%;display:inline;margin-left:5px").form-control#filter_domain
             th Истекает
             //th Правила
             th Счетчик
@@ -36,19 +36,19 @@ block content
           for domain, i in domains
             tr
               td
-                input.form-control.domain.show_save(type='text', value="#{domain.domain}", disabled)
+                input.form-control.domain.show_save(type='text', value=domain.domain, disabled)
               td
-                input.form-control.show_save.expire(type='text', value="#{ moment(1000 * domain.expire).format('DD.MM.YYYY') }")
+                input.form-control.show_save.expire(type='text', value=moment(1000 * domain.expire).format('DD.MM.YYYY'))
               //td
               //  input.form-control.show_save.rules(type='text', value="#{domain.rules || ''}")
               td
-                input.form-control.counter(style="width:57px;display:inline" type='text', value="#{domain.counter || 0}", disabled)
-                input.form-control.max_counter.show_save(style="width:57px;display:inline" type='text', value="#{domain.maxCounter || 0}")
+                input.form-control.counter(style="width:57px;display:inline" type='text', value=(domain.counter || 0), disabled)
+                input.form-control.max_counter.show_save(style="width:57px;display:inline" type='text', value=(domain.maxCounter || 0))
 
               td.action_column
                 button.save_domain.btn.btn-primary.hidden(type='button') Сохранить
                 span &nbsp;
-                button.btn.btn-danger.delete_domain(type='button', data-domain='#{domain.domain}') Удалить
+                button.btn.btn-danger.delete_domain(type='button', data-domain=domain.domain) Удалить
       //div(role="tabpanel" class="tab-pane" id="clients") Клиенты
       //div(role="tabpanel" class="tab-pane" id="messages") sdf
       //div( role="tabpanel" class="tab-pane" id="settings") asdf
