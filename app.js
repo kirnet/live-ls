@@ -16,6 +16,7 @@ var api = require('./routes/api');
 var clientsPage = require('./routes/clients');
 var settingsPage = require('./routes/settings');
 var profile = require('./routes/profile');
+var restful = require('./routes/restful');
 
 var app = express();
 var WebSocket = require('ws');
@@ -63,6 +64,8 @@ app.use('/users', users);
 app.use('/api', api);
 app.use('/clients', clientsPage);
 app.use('/settings', settingsPage);
+app.use('/restful', restful);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
