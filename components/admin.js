@@ -1,9 +1,9 @@
 'use strict';
 
-var isJSON = require('is-json');
-var ServerInfo = require('../models/serverinfo');
-var maxOnline = 0;
-var onlineCounter = 0;
+let isJSON = require('is-json');
+let ServerInfo = require('../models/serverinfo');
+let maxOnline = 0;
+let onlineCounter = 0;
 
 module.exports.init = function(receiver, message, clients) {
   message = isJSON(message) ? JSON.parse(message) : message;
@@ -36,9 +36,9 @@ module.exports.getList = function(receiver, clients) {
 };
 
 module.exports.refresh = function(receivers, clients, domains) {
-  for (var i = 0; i < receivers.length; i++) {
+  for (let i = 0; i < receivers.length; i++) {
     if (clients[receivers[i]]) {
-      for (var id in clients[receivers[i]]) {
+      for (let id in clients[receivers[i]]) {
         clients[receivers[i]][id].send(JSON.stringify(domains));
       }
     }
@@ -55,11 +55,11 @@ module.exports.refresh = function(receivers, clients, domains) {
 };
 
 module.exports.countOnline = function(clients, byHost) {
-  var numClients = 0;
+  let numClients = 0;
 
-  for (var domain in clients) {
+  for (let domain in clients) {
     if (!byHost) {
-      for (var id in clients[domain]) {
+      for (let id in clients[domain]) {
         numClients++
       }
     }

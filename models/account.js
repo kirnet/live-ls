@@ -6,7 +6,8 @@ const crypto = require('crypto');
 const Account = new Schema({
   username: { type: String, required: true, unique: true },
   password: String,
-  role: {type: Number, default: 1}
+  role: {type: Number, default: 10},
+  domains: Array
 });
 
 Account.plugin(passportLocalMongoose);

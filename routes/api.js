@@ -71,7 +71,6 @@ router.post('/save_domain', function(req, res, next) {
       }));
     }
     else {
-
       Domains.findOneAndUpdate({ domain: req.body.domain }, {
           expire: req.body.expire,
           rules: req.body.rules,
@@ -93,7 +92,7 @@ router.post('/', function(req, res, next) {
   router.params = req.body;
 
   Domains.findOne({"hash": req.body.token}, function(err, domain) {
-    var allow = true,
+    let allow = true,
         now = Math.round((new Date()).getTime() / 1000);
 
     if (domain) {

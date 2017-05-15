@@ -1,10 +1,10 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 const passport = require('passport');
-var crypto = require('crypto');
-var Account = require('../models/account.js');
+let crypto = require('crypto');
+let Account = require('../models/account.js');
 const mongoose = require('mongoose');
 
 router.use(function (req, res, next) {

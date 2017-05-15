@@ -10,7 +10,7 @@ module.exports = function(passport) {
     secretOrKey: config.secret
   };
   passport.use(new JwtStrategy(opts, function(jwtPayload, done) {
-    const userId = jwtPayload._doc._id;
+    const userId = jwtPayload.hash;
     Account.findById(userId, function(err, user) {
       if (err) {
         return done(err, false);

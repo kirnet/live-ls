@@ -72,7 +72,7 @@ $(function() {
         button = $(this);
 
     $.ajax({
-      url: '/livestreet/save_domain',
+      url: '/api/save_domain',
       type: 'post',
       dataType: 'json',
       data: {
