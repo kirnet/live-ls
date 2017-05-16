@@ -11,10 +11,6 @@ const requireAuth = passport.authenticate('jwt', { session: false });
 const moment = require('moment');
 const crypto = require('crypto');
 
-let response = {
-  errors: []
-};
-
 require('../config/passport')(passport);
 
 router.get('/', requireAuth, function(req, res) {
@@ -22,6 +18,9 @@ router.get('/', requireAuth, function(req, res) {
 });
 
 router.post('/add_domain', requireAuth, function(req, res) {
+  let response = {
+    errors: []
+  };
   req.checkBody('domain').notEmpty();
   req.getValidationResult().then(function(result) {
     if (!result.isEmpty()) {
@@ -40,7 +39,6 @@ router.post('/add_domain', requireAuth, function(req, res) {
         if (err)  {
           if (err.code == 11000) {
             response.errors = {'domain': 'Такой домен уже существует'};
-
           }
         } else {
           Account.findOneAndUpdate({ _id: req.user._id}, {$push: {domains: domain._id}}).exec();
@@ -52,7 +50,25 @@ router.post('/add_domain', requireAuth, function(req, res) {
   });
 });
 
+router.get('/list_domains', requireAuth, function(req, res) {
+  let response = {
+    errors: []
+  };
+  Account.findOne({_id: req.user._id}, function(err, user) {
+    if (err) throw err;
+    if (user) {
+      Domains.find({_id:{$in:user.domains}}, function(err, domains){
+        res.send(domains);
+      });
+    }
+  });
+  //res.json({result:'ok'});
+});
+
 router.delete('/delete_domain', requireAuth, function(req, res) {
+  let response = {
+    errors: []
+  };
   req.checkBody('domain').notEmpty();
   req.getValidationResult().then(function(result) {
     if (!result.isEmpty()) {
@@ -61,6 +77,7 @@ router.delete('/delete_domain', requireAuth, function(req, res) {
       res.send(response);
     } else {
       Domains.findOne({domain: req.body.domain}, function(err, domain) {
+        if (err) throw err;
         if (!domain) {
           response.errors = {'domain': 'Домен не найден'};
           res.send(response);
@@ -84,8 +101,6 @@ router.delete('/delete_domain', requireAuth, function(req, res) {
       });
     }
   });
-
-
 });
 
 router.post('/login', function(req, res) {
@@ -112,6 +127,9 @@ router.post('/login', function(req, res) {
 });
 
 router.post('/register', function(req, res) {
+  let response = {
+    errors: []
+  };
   req.checkBody('email').notEmpty().isEmail();
   req.checkBody('password').notEmpty();
 
